@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend
+} from "recharts";
 
 function App() {
 
-  const [showForm, setShowForm] = useState(false);
+  const [page, setPage] = useState("welcome");
 
   const [formData, setFormData] = useState({
     age: 18,
@@ -22,7 +35,11 @@ function App() {
 
   const [prediction, setPrediction] = useState("");
   const [probability, setProbability] = useState("");
-
+  const [reasons, setReasons] = useState([]);
+  const [recommendations, setRecommendations] = useState([]);
+  const [history, setHistory] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("All");
   // Handle input changes
   const handleChange = (e) => {
 
@@ -32,28 +49,17 @@ function App() {
     });
 
   };
-
-  // Predict API
-  const handlePredict = async () => {
+  const fetchHistory = async () => {
 
     try {
 
-      const response = await fetch("http://127.0.0.1:8000/predict", {
-
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify(formData)
-
-      });
+      const response = await fetch(
+        "http://127.0.0.1:8000/history"
+      );
 
       const data = await response.json();
 
-      setPrediction(data.prediction);
-      setProbability(data.probability);
+      setHistory(data);
 
     } catch (error) {
 
@@ -63,119 +69,215 @@ function App() {
 
   };
 
+  // API Call
+  const handlePredict = async () => {
 
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/predict",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        }
+      );
+
+      const data = await response.json();
+
+      setPrediction(data.prediction);
+      setProbability(data.probability);
+      setReasons(data.reasons);
+      setRecommendations(data.recommendations);
+      fetchHistory();
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
+
+  useEffect(() => {
+
+    fetchHistory();
+
+  }, []);
+  const fieldLabels = {
+
+  age: "Age",
+
+  Medu: "Mother's Education",
+
+  Fedu: "Father's Education",
+
+  traveltime: "Travel Time",
+
+  studytime: "Study Time",
+
+  failures: "Previous Failures",
+
+  famrel: "Family Relationship",
+
+  freetime: "Free Time",
+
+  goout: "Social Activity",
+
+  Dalc: "Workday Alcohol Consumption",
+
+  Walc: "Weekend Alcohol Consumption",
+
+  health: "Health Status",
+
+  absences: "Absences"
+
+};
+
+  // =========================
   // WELCOME PAGE
-  if (!showForm) {
+  // =========================
+
+  if (page === "welcome") {
 
     return (
 
-      <div
-        style={{
-  minHeight: "100vh",
-  width: "100%",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background:
-    "linear-gradient(135deg, #0f172a, #1e293b, #2563eb)",
-  color: "white",
-  fontFamily: "'Inter', sans-serif",
-  padding: "20px",
-  overflow: "hidden",
-  boxSizing: "border-box"
-}}
-      >
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 text-white overflow-hidden">
 
-        <div
-          style={{
-  width: "100%",
-  maxWidth: "950px",
-  textAlign: "center",
-  background: "rgba(255,255,255,0.08)",
-  padding: "60px 50px",
-  borderRadius: "28px",
-  backdropFilter: "blur(18px)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0px 15px 50px rgba(0,0,0,0.35)"
-}}
-        >
+        <div className="max-w-7xl mx-auto px-6 py-20">
 
-          <h1
-            style={{
-  fontSize: "82px",
-  fontWeight: "800",
-  letterSpacing: "4px",
-  marginBottom: "10px",
-  lineHeight: "1",
-  fontFamily: "'Poppins', sans-serif"
-}}
-          >
-            FAILSAFE
-          </h1>
+          <div className="grid md:grid-cols-2 gap-14 items-center min-h-[85vh]">
 
-          <h2
-           style={{
-  marginBottom: "28px",
-  color: "#dbeafe",
-  fontSize: "32px",
-  fontWeight: "600",
-  fontFamily: "'Inter', sans-serif"
-}}
-          >
-            Predict Before Reality Hits 
-          </h2>
 
-          <p
-            style={{
-  fontSize: "18px",
-  lineHeight: "1.9",
-  color: "#e2e8f0",
-  maxWidth: "760px",
-  margin: "auto",
-  fontWeight: "400"
-}}
-          >
-            FAILSAFE is an AI-powered student risk prediction system.
+            {/* LEFT SIDE */}
+            <div>
 
-            It analyzes study patterns, failures, attendance,
-            and student behaviour to predict whether a student
-            is academically safe or dangerously close to the
-            legendary "bro I’m cooked" zone.
-          </p>
+              <div className="inline-block px-4 py-2 rounded-full bg-blue-500/10 border border-blue-400/20 text-blue-300 text-sm mb-6">
+                AI-Powered Student Analytics
+              </div>
 
-          <p
-            style={{
-  marginTop: "28px",
-  fontSize: "17px",
-  color: "#bfdbfe",
-  fontStyle: "italic",
-  fontWeight: "300"
-}}
-          >
-            Because sometimes students need intervention...
-            before results intervene first.
-          </p>
+              <h1 className="text-6xl md:text-8xl font-black leading-none tracking-tight">
+                FAILSAFE
+              </h1>
 
-          <button
-            onClick={() => setShowForm(true)}
-            style={{
-  marginTop: "45px",
-  padding: "16px 42px",
-  fontSize: "18px",
-  border: "none",
-  borderRadius: "14px",
-  background:
-    "linear-gradient(135deg, #ffffff, #dbeafe)",
-  color: "#1d4ed8",
-  cursor: "pointer",
-  fontWeight: "700",
-  fontFamily: "'Inter', sans-serif",
-  boxShadow: "0px 10px 30px rgba(37,99,235,0.35)",
-  transition: "all 0.3s ease"
-}}
-          >
-            Launch FAILSAFE 
-          </button>
+              <h2 className="mt-6 text-2xl md:text-3xl font-semibold text-blue-200">
+                Predict Before Reality Hits 📉
+              </h2>
+
+              <p className="mt-8 text-slate-300 text-lg leading-8 max-w-xl">
+
+                FAILSAFE uses machine learning to detect
+                students who may be academically at risk -
+                before report cards start causing emotional damage .
+
+              </p>
+
+              <p className="mt-5 text-slate-400 leading-7 max-w-lg">
+
+                Analyze attendance, study patterns, failures,
+                and student behaviour using AI-driven prediction models.
+
+              </p>
+
+              <button
+                onClick={() => setPage("login")}
+                className="mt-10 px-8 py-4 rounded-2xl bg-white text-slate-900 font-bold text-lg hover:scale-105 transition duration-300 shadow-2xl"
+              >
+                Launch FAILSAFE 🚀
+              </button>
+
+            </div>
+
+
+
+            {/* RIGHT SIDE */}
+            <div className="relative">
+
+              <div className="absolute inset-0 bg-blue-500 blur-3xl opacity-20 rounded-full"></div>
+
+              <div className="relative bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+
+                <div className="flex justify-between items-center">
+
+                  <div>
+                    <p className="text-slate-300 text-sm">
+                      Student Risk Status
+                    </p>
+
+                    <h2 className="text-3xl font-bold mt-2">
+                      AI Monitoring
+                    </h2>
+                  </div>
+
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center text-2xl">
+                    📊
+                  </div>
+
+                </div>
+
+
+                <div className="mt-10 space-y-5">
+
+                  <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">
+                        Attendance
+                      </span>
+
+                      <span className="text-green-400 font-bold">
+                        Stable
+                      </span>
+                    </div>
+                  </div>
+
+
+                  <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">
+                        Study Behaviour
+                      </span>
+
+                      <span className="text-yellow-400 font-bold">
+                        Moderate Risk
+                      </span>
+                    </div>
+                  </div>
+
+
+                  <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-300">
+                        Academic Prediction
+                      </span>
+
+                      <span className="text-red-400 font-bold">
+                        AI Evaluating...
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+
+
+                <div className="mt-10 p-5 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-600">
+
+                  <p className="text-sm text-blue-100">
+                    ML Accuracy
+                  </p>
+
+                  <h1 className="text-5xl font-black mt-2">
+                    93%
+                  </h1>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
@@ -185,118 +287,173 @@ function App() {
 
   }
 
+if (page === "login") {
 
-  // FORM PAGE
   return (
 
-    <div
-      style={{
-  minHeight: "100vh",
-  width: "100%",
-  background:
-    "linear-gradient(135deg, #0f172a, #1e293b, #2563eb)",
-  padding: "40px 20px",
-  fontFamily: "'Inter', sans-serif",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  boxSizing: "border-box"
-}}
-    >
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 flex items-center justify-center px-6">
 
-      <div
-       style={{
-  width: "100%",
-  maxWidth: "700px",
-  background: "rgba(255,255,255,0.08)",
-  padding: "45px",
-  borderRadius: "28px",
-  backdropFilter: "blur(18px)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0px 15px 50px rgba(0,0,0,0.35)",
-  color: "white"
-}}
-      >
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-10 shadow-2xl text-white">
 
-        <h1 style={{
-  textAlign: "center",
-  fontSize: "42px",
-  fontWeight: "700",
-  marginBottom: "12px",
-  color: "white",
-  fontFamily: "'Poppins', sans-serif"
-}}>
-          Student Risk Form
+        <h1 className="text-4xl font-black text-center">
+          Faculty Login
         </h1>
 
-        <p
-          style={{
-  textAlign: "center",
-  color: "#cbd5e1",
-  marginBottom: "35px",
-  fontSize: "16px",
-  lineHeight: "1.7"
-}}
-        >
-          Fill student academic and behavioural details
+        <p className="text-slate-300 text-center mt-3">
+          Access FAILSAFE Dashboard
         </p>
 
-        {
-          Object.keys(formData).map((key) => (
 
-            <div key={key} style={{ marginBottom: "18px" }}>
 
-              <label
-                style={{
-  fontWeight: "600",
-  color: "#e2e8f0",
-  fontSize: "15px"
-}}
-              >
-                {key}
-              </label>
+        <div className="mt-8 space-y-5">
 
-              <input
-                type="number"
-                name={key}
-                value={formData[key]}
-                onChange={handleChange}
-                style={{
-  width: "100%",
-  padding: "14px",
-  marginTop: "8px",
-  borderRadius: "12px",
-  border: "1px solid rgba(255,255,255,0.12)",
-  background: "rgba(255,255,255,0.08)",
-  color: "white",
-  fontSize: "15px",
-  outline: "none",
-  boxSizing: "border-box"
-}}
-              />
+          <input
+            type="email"
+            placeholder="Faculty Email"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none"
+          />
 
-            </div>
 
-          ))
-        }
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 outline-none"
+          />
+
+
+
+          <button
+            onClick={() => setPage("dashboard")}
+            className="w-full py-4 rounded-2xl bg-white text-slate-900 font-bold hover:scale-[1.02] transition"
+          >
+            Login
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  );
+
+}
+
+  // =========================
+  // FORM PAGE
+  // =========================
+  const chartData = [
+    {
+      name: "Risk",
+      value: probability * 100
+    },
+    {
+      name: "Safe",
+      value: 100 - (probability * 100)
+    }
+  ];
+
+  const COLORS = ["#ef4444", "#22c55e"];
+
+
+  const totalPredictions = history.length;
+
+  const riskCount = history.filter(
+    item => item.prediction === "At Risk"
+  ).length;
+
+  const safeCount = history.filter(
+    item => item.prediction === "Safe"
+  ).length;
+
+  const avgRisk = history.length
+    ? (
+      history.reduce(
+        (acc, item) => acc + item.probability,
+        0
+      ) / history.length
+    ).toFixed(2)
+    : 0;
+  const filteredHistory = history.filter((item) => {
+
+    const matchesSearch =
+      item.reasons.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      );
+
+    const matchesFilter =
+      filterType === "All"
+        ? true
+        : item.prediction === filterType;
+
+    return matchesSearch && matchesFilter;
+
+  });
+  const analyticsData = [
+
+  {
+    name: "Safe",
+    count: safeCount
+  },
+
+  {
+    name: "At Risk",
+    count: riskCount
+  }
+
+];
+
+  if (page === "dashboard")
+
+  return (
+
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 py-10 px-6 lg:px-12 text-white">
+
+      <div className="w-full bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-10">
+        <div className="text-center">
+
+          <h1 className="text-5xl font-black">
+            FAILSAFE Predictor
+          </h1>
+
+          <p className="mt-4 text-slate-300">
+            Fill student academic details for AI risk analysis
+          </p>
+
+        </div>
+
+
+        <div className="grid md:grid-cols-2 gap-5 mt-10">
+
+          {
+            Object.keys(formData).map((key) => (
+
+              <div key={key}>
+
+                <label className="block text-sm text-slate-300 mb-2 capitalize">
+                  {fieldLabels[key]}
+                </label>
+
+                <input
+                  type="number"
+                  name={key}
+                  value={formData[key]}
+                  onChange={handleChange}
+                  className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-400 transition"
+                />
+
+              </div>
+
+            ))
+          }
+
+        </div>
+
 
         <button
           onClick={handlePredict}
-         style={{
-  width: "100%",
-  padding: "16px",
-  background:
-    "linear-gradient(135deg, #ffffff, #dbeafe)",
-  color: "#1d4ed8",
-  border: "none",
-  borderRadius: "14px",
-  fontSize: "18px",
-  fontWeight: "700",
-  cursor: "pointer",
-  marginTop: "20px",
-  fontFamily: "'Inter', sans-serif",
-  boxShadow: "0px 10px 30px rgba(37,99,235,0.35)"
-}}
+          className="w-full mt-8 py-4 rounded-2xl bg-white text-slate-900 font-bold text-lg hover:scale-[1.02] transition duration-300"
         >
           Predict Student Risk
         </button>
@@ -306,42 +463,271 @@ function App() {
           prediction && (
 
             <div
-              style={{
-  marginTop: "30px",
-  padding: "25px",
-  borderRadius: "18px",
-  background:
-    prediction === "At Risk"
-      ? "rgba(239,68,68,0.18)"
-      : "rgba(34,197,94,0.18)",
-  border:
-    prediction === "At Risk"
-      ? "1px solid rgba(239,68,68,0.4)"
-      : "1px solid rgba(34,197,94,0.4)",
-  backdropFilter: "blur(10px)"
-}}
+              className={`mt-8 p-6 rounded-2xl border backdrop-blur-lg ${prediction === "At Risk"
+                ? "bg-red-500/10 border-red-500/30"
+                : "bg-green-500/10 border-green-500/30"
+                }`}
             >
 
-              <h2>
+              <h2 className="text-3xl font-bold">
                 Prediction: {prediction}
               </h2>
 
-              <h3>
+              <p className="mt-3 text-lg text-slate-300">
                 Risk Probability: {probability}
-              </h3>
-
-              <p>
-                {
-                  prediction === "At Risk"
-                    ? "This student may need academic attention, mentoring, or intervention."
-                    : "Student appears academically stable for now."
-                }
               </p>
+              <div className="mt-5">
+
+                <h3 className="text-xl font-semibold mb-3">
+                  AI Insights
+                </h3>
+
+                <ul className="space-y-2">
+
+                  {
+                    reasons.map((reason, index) => (
+
+                      <li
+                        key={index}
+                        className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-200"
+                      >
+                        {reason}
+                      </li>
+
+                    ))
+                  }
+
+                </ul>
+
+              </div>
+              {/* AI INTERVENTIONS */}
+<div className="mt-8">
+
+  <h3 className="text-xl font-semibold mb-4">
+    Recommended Interventions
+  </h3>
+
+  <div className="space-y-3">
+
+    {
+      recommendations.map((item, index) => (
+
+        <div
+          key={index}
+          className="bg-blue-500/10 border border-blue-500/20 rounded-2xl px-5 py-4 text-blue-100"
+        >
+
+           {item}
+
+        </div>
+
+      ))
+    }
+
+  </div>
+
+</div>
+
+
+
+{/* PIE CHART */}
+<div className="mt-10">
+
+  <h3 className="text-xl font-semibold mb-6">
+    Risk Visualization
+  </h3>
+
+  <div className="w-full h-[350px]">
+
+    <ResponsiveContainer width="100%" height="100%">
+
+      <PieChart>
+
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          outerRadius={110}
+          dataKey="value"
+          label
+          paddingAngle={3}
+          stroke="none"
+        >
+
+          {
+            chartData.map((entry, index) => (
+
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+
+            ))
+          }
+
+        </Pie>
+
+        <Tooltip />
+
+      </PieChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+</div>
 
             </div>
 
           )
         }
+
+        {/* PREDICTION HISTORY */}
+        <div className="mt-10">
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+
+            <input
+              type="text"
+              placeholder="Search AI insights..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-5 py-3 outline-none"
+            />
+
+
+
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              className="bg-white/5 border border-white/10 rounded-2xl px-5 py-3 outline-none"
+            >
+
+              <option value="All">All</option>
+              <option value="Safe">Safe</option>
+              <option value="At Risk">At Risk</option>
+
+            </select>
+
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+              <p className="text-slate-400 text-sm">
+                Total Predictions
+              </p>
+
+              <h1 className="text-3xl font-black mt-2">
+                {totalPredictions}
+              </h1>
+            </div>
+
+
+            <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-5">
+              <p className="text-red-300 text-sm">
+                At Risk
+              </p>
+
+              <h1 className="text-3xl font-black mt-2 text-red-400">
+                {riskCount}
+              </h1>
+            </div>
+
+
+            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-5">
+              <p className="text-green-300 text-sm">
+                Safe Students
+              </p>
+
+              <h1 className="text-3xl font-black mt-2 text-green-400">
+                {safeCount}
+              </h1>
+            </div>
+
+
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
+              <p className="text-blue-300 text-sm">
+                Avg Risk
+              </p>
+
+              <h1 className="text-3xl font-black mt-2 text-blue-400">
+                {(avgRisk * 100).toFixed(0)}%
+              </h1>
+            </div>
+
+          </div>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-10">
+
+  <h2 className="text-2xl font-bold mb-6">
+    Faculty Risk Analytics
+  </h2>
+
+  <div className="w-full h-[320px]">
+
+    <ResponsiveContainer width="100%" height="100%">
+
+      <BarChart data={analyticsData}>
+
+        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+
+        <XAxis dataKey="name" />
+
+        <YAxis />
+
+        <Tooltip />
+
+        <Legend />
+
+        <Bar
+          dataKey="count"
+          fill="#3b82f6"
+          radius={[10, 10, 0, 0]}
+        />
+
+      </BarChart>
+
+    </ResponsiveContainer>
+
+  </div>
+
+</div>
+          <h2 className="text-3xl font-bold mb-6">
+            Prediction History
+          </h2>
+
+          <div className="space-y-4">
+
+            {
+              filteredHistory.slice().reverse().map((item) => (
+
+                <div
+                  key={item.id}
+                  className="bg-white/5 border border-white/10 rounded-2xl p-5"
+                >
+
+                  <div className="flex justify-between items-center">
+
+                    <h3 className="text-xl font-semibold">
+                      {item.prediction}
+                    </h3>
+
+                    <span className="text-blue-300">
+                      {(item.probability * 100).toFixed(1)}%
+                    </span>
+
+                  </div>
+
+                  <p className="mt-3 text-slate-300">
+                    {item.reasons}
+                  </p>
+
+                </div>
+
+              ))
+            }
+
+          </div>
+
+        </div>
 
       </div>
 
