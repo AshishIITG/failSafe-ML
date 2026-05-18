@@ -116,6 +116,4 @@ http://localhost:5173
 
 ---
 
-# Author
 
-Ashish Bharti
