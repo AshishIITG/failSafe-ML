@@ -2,9 +2,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-DATABASE_URL = "postgresql://postgres:Ashish8853%40@localhost:5433/failsafe_db"
+DATABASE_URL = "sqlite:///./failsafe.db"
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(
+    DATABASE_URL, connect_args={"check_same_thread": False}
+)
 
 SessionLocal = sessionmaker(
     autocommit=False,
