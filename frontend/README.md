@@ -1,34 +1,66 @@
-# 📉 FAILSAFE: AI-Powered Student Risk Predictor
+# 📉 FAILSAFE Frontend
 
-An asynchronous, distributed web application that utilizes Machine Learning to predict student academic risk and provides AI-driven intervention strategies.
+React frontend for the FAILSAFE student risk prediction dashboard.
 
-##  Architecture Overview
+## What this frontend does
 
-This project implements a production-grade microservices architecture to handle heavy Machine Learning processing without blocking the main web server.
+- Collects student data through an interactive form
+- Sends prediction requests to the FastAPI backend
+- Polls task status for asynchronous Celery predictions
+- Displays risk results, probability, recommended actions, and explainability
+- Shows saved prediction history and supports search/filtering
+- Renders charts using Recharts for visual analytics
 
-*   **Frontend (React & Recharts):** Provides a responsive, asynchronous UI that utilizes automated API polling to fetch background task updates without freezing the client.
-*   **Backend API (FastAPI):** A high-performance REST API that instantly handles incoming traffic, routes ML tasks to a message broker, and returns asynchronous task tickets.
-*   **Message Broker (Upstash Redis):** A serverless in-memory data store managing the task queue.
-*   **Background Worker (Celery):** An asynchronous worker that decouples the heavy Machine Learning inference from the main thread.
-*   **Machine Learning (Scikit-Learn & SHAP):** A predictive model that not only calculates risk probability but uses SHAP values to explain *why* the prediction was made.
+## Tech stack
 
-##  Tech Stack
+- React 19
+- Vite
+- Tailwind CSS
+- Recharts
 
-*   **Frontend:** React, Vite, Tailwind CSS, Recharts
-*   **Backend:** Python, FastAPI, SQLAlchemy, SQLite
-*   **Distributed Queue:** Celery, Upstash Redis
-*   **Data Science:** Pandas, Scikit-Learn, SHAP, Joblib
+## Setup
 
-##  Key Features
+From the `frontend` directory:
 
-1.  **Asynchronous ML Processing:** Decoupled architecture prevents server timeouts during heavy ML inference.
-2.  **Automated Status Polling:** React frontend silently polls the FastAPI backend for ticket status updates.
-3.  **Explainable AI (XAI):** Utilizes SHAP to generate human-readable insights into which specific student behaviors increased or decreased their academic risk.
-4.  **Automated Interventions:** Generates actionable, algorithmic recommendations for faculty based on the student's specific risk factors.
-
-## 🛠️ Local Development Setup
-
-### 1. Clone the repository
 ```bash
-git clone [https://github.com/yourusername/failsafe-ml.git](https://github.com/yourusername/failsafe-ml.git)
-cd failsafe-ml
+npm install
+npm run dev
+```
+
+Open the app at:
+
+```bash
+http://localhost:5173
+```
+
+## Backend requirements
+
+This frontend expects the backend API to run at:
+
+```bash
+http://127.0.0.1:8000
+```
+
+The backend should provide:
+
+- `POST /predict`
+- `GET /task-status/{task_id}`
+- `GET /history`
+
+## Available scripts
+
+- `npm run dev` — start the local Vite development server
+- `npm run build` — build the production bundle
+- `npm run preview` — preview the production build
+- `npm run lint` — run ESLint checks
+
+## Folder structure
+
+- `src/App.jsx` — main application UI and prediction flow
+- `src/main.jsx` — React root entry point
+- `src/index.css` — Tailwind and global styling
+
+## Notes
+
+- The frontend uses async polling so predictions return quickly while Celery processes them in the background.
+- If you update backend endpoints, also update `src/App.jsx` URL paths.
